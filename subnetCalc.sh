@@ -1,7 +1,28 @@
 #!/bin/bash
 
-# Calculates possible subnet configurations based 
+# Calculates possible subnet configurations based on given IP and netmask
+# Can calculate based on number of devices per network desired
+# Can calculate based on number of networks desired
 
+# Function from utils.sh for adding borders
+# Takes two parameters, the character to make the border, and the title (can be a blank string) to put in the middle
+function addFancyThings {
+	local char=$1
+	local title=$2
+	local titleLen=${#title}
+	local stopPoint=$[(COLUMNS-titleLen)/2]s
+	local line
+	for ((i=0;i<$stopPoint;i++)); do
+		line+=$char
+	done
+	line+=$title
+	for ((j=${#line};j<$COLUMNS;j++)); do
+		line+=$char
+	done
+	echo $line
+}
+
+# Utilizes global variables
 function convertNetmask {
 #Convert slash notation to netmask
 #Assumes slash is non-zero
