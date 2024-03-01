@@ -4,13 +4,14 @@
 # Can calculate based on number of devices per network desired
 # Can calculate based on number of networks desired
 
+
 # Function from utils.sh for adding borders
 # Takes two parameters, the character to make the border, and the title (can be a blank string) to put in the middle
 function addFancyThings {
 	local char=$1
 	local title=$2
 	local titleLen=${#title}
-	local stopPoint=$[(COLUMNS-titleLen)/2]s
+	local stopPoint=$[(COLUMNS-titleLen)/2]
 	local line
 	for ((i=0;i<$stopPoint;i++)); do
 		line+=$char
@@ -46,6 +47,10 @@ function convertNetmask {
                 fi
 	done
 }
+
+clear
+
+addFancyThings "*" "Subnet Calculator"
 
 # Override IFS to seperate addresses on dots
 oldIFS=$IFS
@@ -154,4 +159,29 @@ for ((i=0;i<4;i++)); do
 	esac
 done
 
-echo "The Network ID of $1 is ${network[0]}.${network[1]}.${network[2]}.${network[3]}/$slash"
+# origAddresses=$(bc -l <<< "l(32-$slash)/l(2)")
+# Calculates number of IP addresses available under the original network
+origAddresses=$[2**(32-slash)]
+
+addFancyThings "-" "Calculating Network ID"
+
+echo "Network ID: ${network[0]}.${network[1]}.${network[2]}.${network[3]}/$slash"
+echo "Netmask: ${netmask[0]}.${netmask[1]}.${netmask[2]}.${netmask[3]}"
+echo "# of available addresses on this network: $[origAddresses-2]" 
+
+addFancyThings "-" ""
+
+echo "Would you like to subnet this network based on networks (1) or devices (2) ?"
+echo -n "(1/2): "
+read option
+
+if [[ $option -eq 1 ]]; then
+	echo ""
+elif [[ $option -eq 2 ]]; then
+	echo -n "How many devices would you like each network to have: "
+	read num
+	bitsNeeded=$(bc -l <<< "(l($num)/l(2))")
+	echo $bitsNeeded
+fi
+
+# echo "The Network ID of $1 is ${network[0]}.${network[1]}.${network[2]}.${network[3]}/$slash"
