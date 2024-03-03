@@ -4,6 +4,13 @@
 # Can calculate based on number of devices per network desired
 # Can calculate based on number of networks desired
 
+# To Do: 
+# Finish determining new subnet mask for devices, and IP ranges
+# Write code for network option for determining based on amount of devices desired
+# Prompt user at several different points if they would like to quit or restart
+# Add error checking when incorrect input is received
+# Offer to save results to a file when completed
+
 
 # Function from utils.sh for adding borders
 # Takes two parameters, the character to make the border, and the title (can be a blank string) to put in the middle
@@ -28,23 +35,23 @@ function convertNetmask {
 #Convert slash notation to netmask
 #Assumes slash is non-zero
 #Convert slash notation to netmask
-        for ((i=0;i<4;i++)); do
-                if [[ slash -ge 8 ]]; then
-                        netmask[$i]=255
-                        slash=$[slash-8]
-                else
-                        case $slash in 
-                                0 ) netmask[i]=0;;
-                                1 ) netmask[i]=128;;
-                                2 ) netmask[i]=192;;
-                                3 ) netmask[i]=224;;
-                                4 ) netmask[i]=240;;
-                                5 ) netmask[i]=248;;
-                                6 ) netmask[i]=252;;
-                                7 ) netmask[i]=254;;
-                        esac
-			slash=0
-                fi
+	for ((i=0;i<4;i++)); do
+		if [[ slash -ge 8 ]]; then
+			netmask[$i]=255
+			slash=$[slash-8]
+		else
+			case $slash in 
+				0 ) netmask[i]=0;;
+				1 ) netmask[i]=128;;
+				2 ) netmask[i]=192;;
+				3 ) netmask[i]=224;;
+				4 ) netmask[i]=240;;
+				5 ) netmask[i]=248;;
+				6 ) netmask[i]=252;;
+				7 ) netmask[i]=254;;
+			esac
+		slash=0
+		fi
 	done
 }
 
@@ -63,20 +70,20 @@ if [[ $# -eq 0 ]]; then
 	echo -n "Enter your Netmask: "
 	read netmaskInput
 	case $netmaskInput in
-                255.*.*.* ) read -a netmask <<< $netmaskInput;;
-                /* ) slash=${2:1}
-                        #Convert slash notation to netmask
-                        convertNetmask;;
-                [0-9] | [0-3][0-9] | 30 ) slash=$netmaskInput
-                        #Convert slash notation to netmask
-                        convertNetmask;;
-                [aAbBcC] ) case $netmaskInput in
-                        [aA] ) slash=8;;
-                        [bB] ) slash=16;;
-                        [cC] ) slash=24;;
-                        esac
-                        convertNetmask;;
-        esac
+		255.*.*.* ) read -a netmask <<< $netmaskInput;;
+		/* ) slash=${2:1}
+			#Convert slash notation to netmask
+			convertNetmask;;
+		[0-9] | [0-3][0-9] | 30 ) slash=$netmaskInput
+			#Convert slash notation to netmask
+			convertNetmask;;
+		[aAbBcC] ) case $netmaskInput in
+				[aA] ) slash=8;;
+				[bB] ) slash=16;;
+				[cC] ) slash=24;;
+			esac
+			convertNetmask;;
+	esac
 	IFS=$oldIFS
 # The elif below needs error checking:
 	# Did they give me an IP, netmask, IP/bits?
@@ -95,19 +102,22 @@ elif [[ $# -eq 1 ]]; then
 			echo -n "Enter your Netmask: "
       			read netmaskInput
        			case $netmaskInput in
-                		255.*.*.* ) read -a netmask <<< $netmaskInput;;
-                		/* ) slash=${2:1}
-                        		#Convert slash notation to netmask
-                	        	convertNetmask;;
-         	      	 	[0-9] | [0-3][0-9] | 30 ) slash=$netmaskInput
-                       		 	#Convert slash notation to netmask
-                       		 	convertNetmask;;
-               		 	[aAbBcC] ) case $netmaskInput in
-                	        	[aA] ) slash=8;;
-	                        	[bB] ) slash=16;;
-        	                	[cC] ) slash=24;;
-                	        	esac
-				        convertNetmask;;
+					255.*.*.* ) 
+						read -a netmask <<< $netmaskInput;;
+					/* ) 
+						slash=${2:1}
+						#Convert slash notation to netmask
+						convertNetmask;;
+					[0-9] | [0-3][0-9] | 30 ) slash=$netmaskInput
+						#Convert slash notation to netmask
+						convertNetmask;;
+					[aAbBcC] ) 
+						case $netmaskInput in
+							[aA] ) slash=8;;
+							[bB] ) slash=16;;
+							[cC] ) slash=24;;
+						esac
+					convertNetmask;;
 			esac
 	esac
 	IFS=$oldIFS
@@ -177,11 +187,62 @@ read option
 
 if [[ $option -eq 1 ]]; then
 	echo ""
+
+	# Prompt for amount of networks desired
+	# Determine bitsNeeded for that amount of networks
+	# Calculate if bits are available on current network
+	# Determine new netmask, slash, IP ranges, and number of devices per network
+
 elif [[ $option -eq 2 ]]; then
-	echo -n "How many devices would you like each network to have: "
+	echo -n "At least how many devices would you like each network to have: "
 	read num
-	bitsNeeded=$(bc -l <<< "(l($num)/l(2))")
-	echo $bitsNeeded
+
+	# Calculates how many bits are needed for device IDs, reserving two IPs for network ID and broadcast
+	bitsNeeded=$(bc -l <<< "(l($num+2)/l(2))") # Calculates number of bits needed in float point form
+	bitsNeeded=$(gawk -v bits=$bitsNeeded 'BEGIN{x=int(bits); print x}') # Floors to nearest integer
+	# Conditional increments amount of bits needed by 1 if not exactly equal to amount of devices requested
+
+	if [[ $[2**bitsNeeded-2] -ne $num ]]; then
+		((bitsNeeded++))
+	fi
+
+	if [[ $[32-slash-bitsNeeded] -ge 0 ]]; then
+		subnetSlash=$[slash+bitsNeeded]
+
+		# Print new slash, new netmask, number of devices, number of networks
+
+		# Need to find number of subnet network ID bits
+		# Need to find number of networks
+		# Find network ID and broadcast IDs for each of those networks
+		# Find IP range of each network
+
+		# This code will be used elsewhere
+		# for ((i=0;i<4;i++)); do
+			# if [[ $subnetSlash -ge 8 ]]; then
+			# 	subnetNetmask[$i]=255
+			# 	subnetSlash=$[subnetSlash-8]
+			# else
+			# 	case $subnetSlash in 
+			# 		0 ) subnetNetmask[i]=0;;
+			# 		1 ) subnetNetmask[i]=128;;
+			# 		2 ) subnetNetmask[i]=192;;
+			# 		3 ) subnetNetmask[i]=224;;
+			# 		4 ) subnetNetmask[i]=240;;
+			# 		5 ) subnetNetmask[i]=248;;
+			# 		6 ) subnetNetmask[i]=252;;
+			# 		7 ) subnetNetmask[i]=254;;
+			# 	esac
+			# $subnetSlash=0
+			# fi
+		# done
+		
+	else
+		echo "Not enough bits available in original network, please try again."
+	fi
 fi
+
+# Print all details of subnetting
+# Offer to save details to a file
+# Offer to restart or exit after finishing
 
 # echo "The Network ID of $1 is ${network[0]}.${network[1]}.${network[2]}.${network[3]}/$slash"
