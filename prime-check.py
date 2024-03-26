@@ -7,7 +7,6 @@ from math import sqrt
 
 def main():
     if len(cla) > 1: # Conditonal to check for command line arguments
-        results_dict = {} # Creates dictionairy of numbers given and results
         for i in range(1,len(cla)):
             try: # Try statement to prevent int() conversion errors
                 key = int(cla[i])
@@ -15,9 +14,7 @@ def main():
             except: # If a nonnumeric string is given, return NaN (not a number)
                 key = cla[i]
                 value = "NaN"
-            results_dict[key] = value # Creates entry in the dictionairy for number and prime value
-        for j in results_dict: # iterates over new dictionairy to display results
-            print(str(j) + ": " + str(results_dict[j]))
+            print(str(key) + ": " + str(value))
     else:
         promptUser()
 
@@ -28,7 +25,7 @@ def isPrime(num): # Calculates whether a given number is prime or not prime
         return "Not Prime"
     else:
         ceiling = int(sqrt(num)) # Finds square root of number, stores it to variable
-        for i in range(3,ceiling+1):
+        for i in range(3,ceiling,2):
             if num % i == 0:
                 return "Not Prime"
     return "Prime"
