@@ -1,0 +1,62 @@
+# Character could either tranverse map or stay in one place and fight waves of enemies
+	# If tranversing actual map, logic for map and possible key combinations need to be filled out
+		# This would take a significantly higher amount of time due to needing to come up with map, logic for map
+		# May require external graphics engine
+	# If fighting waves of enemies, no logic needed to keep finding enemies/loot
+		# There needs to be some sense of ramping difficulty or progression
+			# amount of XP gained could scale difficulty of enemies
+			# amount of distance travelled could also scale enemies
+				# will XP gained be a flat amount or scaled random?
+			# logic in enemy init needs to be able to be variable
+				# maybe an XP check?
+# Character's set stats determine different game elements
+	# Strength determines flat damage output
+	# Perception increases likeliness to find items
+	# Endurance allows for more AP (action points) per combat turn, allowing for more actions, also boosts HP gain/reduces HP loss
+	# Charisma increases probability of positive outcomes when interacting with NPCs or intimidating enemies
+	# Intelligence allows for better crafting options
+	# Agility gives a higher probability of being able to attack twice, or dodge an enemies attack
+	# Luck increases crit chance and rarity of items
+	
+# Game logic
+	# Player should be able to look around for an item, "progress through the world"
+		# Player could walk for sense of direction, maybe record a meters travelled stat for progression
+	# Game loop and game actions need to check stats of player in order to adjust probabilities accordingly
+	# Crafting mechanics
+		# Crafting/inventory information needs to be shared within functions
+		# Inventory is tied to player class while crafting would be a function with a player inventory check
+			# player would need to be passed as parameter
+		# Higher intelligence would allow for better weapons to be crafted
+		# Crafting items could be found by looking around	
+	# Need loop break for player death or quitting - record and display character stats on a death screen
+	# Conditional to check if player has checked inventory, crafted, walked forward, looked for an item
+	# Chance of enemy attacking player after they've completed any of the above tasks
+		# maybe enemies are more likely to appear when walking/progressing forward
+		
+# Combat mechanics
+	# Enemy is init at beginning of combat, given stats scaled on the players level and distance travelled
+	# When entering combat, player gets AP dependent on their endurance stat
+	# AP is used whenever checking inventory, using an item, swinging at enemy, attempting to intimidate, or attempting to run away
+	# Enemy will attack once player either uses all their AP or chooses to pass their turn
+	# Could have player and enemy limbs mechanic, and you target your opponent based on what part of the body you're targeting
+		# Requires limb stats for both player and enemy classes
+	# Weapons could have a bleed mechanic where it does damage over time
+	# Chance of both player and enemy missing based on perception check
+	# Chance of critical hit based on luck stat, does additional damage
+	# Agility stat check could allow player to dodge, or attack twice
+	# Charisma check could allow player to intimidate enemy and cause them to flee, gives minor XP gain
+	# Agility check could give player higher probability of being able to flee, no XP gain
+	# Defeating enemy gives most possible XP gain
+
+# Inventory/item mechanics
+	# items could be equipment (swords, shields, armor)
+	# items could be crafting resources (stone, copper, wood, string, feathers, iron, leather, etc)
+	# items could be given upon travelling a distance (small chance) or given when searching for resources (higher chance esp for crafitng materials)
+	
+# levelling
+	# xp and distance scales enemies
+	# xp gained from defeating or intimidating enemies, or crafting new equipment
+	# xp levels allow player to increment one of their stats (more max hp, more stats)
+	# when a player levels up their hp is set to their max HP
+	
+	
