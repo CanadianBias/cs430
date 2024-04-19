@@ -23,21 +23,27 @@ class Player():
         self.inventory = []
         self.lvl = 0
         self.xp = 0
+    def displayStats(self):
+        print("Character: " + self.name)
+        print("HP: " + str(self.currenthp) + "/" + str(self.maxhp))
+        print("Level: " + str(self.lvl))
+        print("Strength: " + str(self.strength))
+        print("Perception: " + str(self.perception))
+        print("Endurance: " + str(self.endurance))
+        print("Charisma: " + str(self.charisma))
+        print("Intelligence: " + str(self.intelligence))
+        print("Agility: " + str(self.agility))
+        print("Luck: " + str(self.luck))
+    def displayInventory(self):
+        # os.system('clear')
+        for i in self.inventory:
+            print(i.name)
     def equipItem(self):
         # Take equippable item, change equip status, increment max health/strength
         pass
     def unequipItem(self):
         # Take equipped item, change equip status, deincrement max health/strength
         pass
-
-class Enemy():
-    def __init__(self) -> None:
-        pass
-
-class Game():
-    def __init__(self, currentPlayer) -> None:
-        self.player = currentPlayer
-        self.distance = 0 # determines progression through game, scales enemies
     def findItem(self):
         # Check perception stat, adjust probability needed to find item accordingly
         # Create random stat using lists of possible items,
@@ -49,9 +55,22 @@ class Game():
         # Increment XP
         # If player tries to craft item they don't have resources for, restart crafting
         pass
-        
-class Item():
+
+class Enemy():
     def __init__(self) -> None:
+        pass
+
+class Game():
+    def __init__(self, currentPlayer) -> None:
+        self.player = currentPlayer
+        self.distance = 0 # determines progression through game, scales enemies
+    def walkForward(self):
+        self.distance += 100
+
+class Item():
+    def __init__(self, name) -> None:
+        # Name of item
+        self.name = name
         # Definition determining type of item
         # If debuff items, have respective stats or placeholder for different types
         # Crafting class if item is a crafting item
@@ -76,11 +95,27 @@ def addFancyThings(string, char): # Adds some title flair
 
 def coreGame(me, game):
     while True:
+        # os.system('clear')
         print(addFancyThings("Status Report", "-"))
+        # Print character stats to terminal to let player know their stats/hp
+        me.displayStats()
+        print("Distance Travelled: " + str(game.distance) + "m")
+        print(addFancyThings("", "-"))
         # Give player option to move forward, check inventory, look around for items, or craft items
+        print("1: Open Invetory Menu")
+        print("2: Open Crafting Menu")
+        print("3: Look for Items")
+        print("4: Continue Pressing Onward")
+        selection = input()
+        if int(selection) == 1:
+            newItem = Item("Sword")
+            me.inventory.append(newItem)
+            print(addFancyThings("Inventory", "-"))
+            me.displayInventory()
+            print(addFancyThings("", "-"))
         # When looking around or moving forward, higher probability of encountering enemy
         # When looking in inventory or crafting, lower probability of encountering enemy
-        input()
+
     pass
 
 def combat(me):
@@ -88,7 +123,7 @@ def combat(me):
 
 def main():
     print("Welcome to Fight Sim Game v.0.0 prebeta")
-    myName = input("What's your name, yo?")
+    myName = input("What's your name, yo? ")
     me = Player(myName)
     game = Game(me)
     coreGame(me, game)
