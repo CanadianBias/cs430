@@ -42,16 +42,47 @@ class Player():
         # os.system('clear')
         # Placeholder space for a random enemy encounter when you open your inventory
         print(addFancyThings("Inventory", "-"))
-        for i,item in enumerate(self.inventory):
-                print(str(i) + ": " + str(item.name))
+        if len(self.inventory) == 0:
+            print("Your Inventory is Empty.")
+        else:
+            for i,item in enumerate(self.inventory):
+                    print(str(i) + ": " + str(item.name))
         print(addFancyThings("", "-"))
-        print("1: Select an Item or Resource")
-        print("2: Exit Inventory")
-        inventorySelection = checkUserInput()
-        if inventorySelection == 1:
-            print(str(self.inventory[0].name))
-        if inventorySelection == 2:
-            return
+        if len(self.inventory) == 0:
+            input("Press Enter to Continue...")
+        else:
+            print("1: Select an Item or Resource")
+            print("2: Exit Inventory")
+            inventorySelection = checkUserInput()
+            if inventorySelection == 1:
+                itemSelection = checkUserInput()
+                print(addFancyThings(self.inventory[itemSelection].name, "-"))
+                print("Name: " + str(self.inventory[itemSelection].name))
+                print("Type: " + str(self.inventory[itemSelection].type))
+                if self.inventory[itemSelection].type == "armor":
+                    print("Armor Stats: " + str(self.inventory[itemSelection].armorDebuff))
+                elif self.inventory[itemSelection].type == "weapon":
+                    print("Weapon Stats: " + str(self.inventory[itemSelection].weaponDebuff))
+                if self.inventory[itemSelection].isEquipped == True:
+                    print("Equipped: Yes")
+                elif self.inventory[itemSelection].isEquipped == False:
+                    print("Equipped: No")
+                print(addFancyThings("", "-"))
+                print("1: Equip/Unequip Item")
+                print("2: Exit to Inventory")
+                print("3: Exit to Game")
+                equipSelection = checkUserInput()
+                if equipSelection == 1:
+                    if self.inventory[itemSelection].isEquipped == True:
+                        self.unequipItem()
+                    elif self.inventory[itemSelection].isEquipped == False:
+                        self.equipItem()
+                elif equipSelection == 2:
+                    self.displayInventory()
+                elif equipSelection == 3:
+                    return
+            if inventorySelection == 2:
+                return
     def equipItem(self):
         # Take equippable item, change equip status, increment max health/strength
         pass
@@ -72,8 +103,19 @@ class Player():
         pass
 
 class Enemy():
-    def __init__(self) -> None:
-        pass
+    def __init__(self, name):
+        # Enemy's stats are modified and scaled by the game and the player's stats
+        self.name = name
+        self.currenthp = 1
+        self.maxhp = self.currenthp
+        self.currentap = 1
+        self.maxap = self.currentap
+        self.alive = True # changed if currenthp drops below 1
+        self.strength = 1 # determines flat damage output
+        self.endurance = 1 # allows for more AP (action points) per combat turn, allowing for more actions, also boosts HP gain/reduces HP loss
+        self.agility = 1 # gives a higher probability of being able to attack twice, or dodge an enemies attack
+        self.luck = 1 # increases crit chance and rarity of items
+        
 
 class Game():
     def __init__(self, currentPlayer) -> None:
@@ -82,38 +124,28 @@ class Game():
     def walkForward(self):
         self.distance += 100
 
-# Defining resources and items in the same class was too cumbersome, moving to seperate definitions
-# class Item():
-#     def __init__(self, name, boolResource, strStat, armorStat, boolWood, boolStone) -> None:
-#         # Name of item
-#         self.name = name
-#         self.isResource = boolResource # boolean to determine whether it is a resource or item
-#         # If debuff items, have respective stats or placeholder for different types
-#         # These values will be zeroes for resources
-#         self.strengthDebuff = strStat
-#         self.armorDebuff = armorStat
-#         # Crafting class if item is a crafting item
-#         # These will be false for equipment
-#         self.isWood = boolWood
-#         self.isStone = boolStone
-#         # Equipped status if equipped
-#         self.isEquipped = False # false by default as the player will need to manually equip the item
-#         pass
-
 class Item():
-    def __init__(self, name, apCost):
+    def __init__(self, name, apCost, type, debuff):
         self.name = name
         # Bools to let inventory know difference between resource and item
         self.isItem = True
         self.isResource = False
         self.apCost = apCost
+        self.type = type
+        if type == "armor":
+            self.armorDebuff = debuff
+        elif type == "weapon":
+            self.weaponDebuff = debuff
+        self.isEquipped = False
 
 class Resource():
-    def __init__(self, name):
+    def __init__(self, name, type):
         self.name = name
         # Bools to let inventory know difference between resource and item
         self.isItem = False
         self.isResource = True
+        self.type = type
+        
         
 def addFancyThings(string, char): # Adds some title flair
     stopPoint = os.get_terminal_size()[0]/2
@@ -149,7 +181,7 @@ def coreGame(me, game):
         print("Distance Travelled: " + str(game.distance) + "m")
         print(addFancyThings("", "-"))
         # Give player option to move forward, check inventory, look around for items, or craft items
-        print("1: Open Inventory Menu")
+        print("1: Open Inventory Menu") # Functional
         print("2: Open Crafting Menu")
         print("3: Look for Items")
         print("4: Continue Pressing Onward")
@@ -164,25 +196,155 @@ def coreGame(me, game):
 
         # elif actionSelection == 2:
         # elif actionSelection == 3:
-        # elif actionSelection == 4:
-        # elif actionSelection == 5:
-        # When looking around or moving forward, higher probability of encountering enemy
+        elif actionSelection == 4:
+            # When looking around or moving forward, higher probability of encountering enemy
+            percEncounter = rand.random()
+            if percEncounter > 0.7:
+                combat(me, game)
+            else:
+                game.distance += 100
+        elif actionSelection == 5:
+            print(addFancyThings("", "*"))
+            print("Thanks for playing!") # this is probably just a placeholder for a more robust ending screen
+            exit()
+        else:
+            print("Yo, that's not an option...")
         # When looking in inventory or crafting, lower probability of encountering enemy
 
     pass
 
-def combat(me):
-    # Generate new Enemy instance with random name
+def combat(me, game):
+    # Generate new Enemy instance with random name from list
+    # Generated from ChatGPT 3.5 prompt "Create a list of random 100 fantasy enemy names in a bracket encapsulated, comma separated list with each name in quotes"
+    potentialNameList = [
+  "Zarog the Shadowcaster",
+  "Grimmok the Bloodthirsty",
+  "Sylvana the Enchantress",
+  "Thornax the Thorned",
+  "Malphas the Darkwing",
+  "Vorax the Devourer",
+  "Eldritch the Soulless",
+  "Nyxia the Nightwalker",
+  "Ignatius the Infernal",
+  "Ragnor the Reckoner",
+  "Drakara the Dreaded",
+  "Mordred the Malevolent",
+  "Lilith the Temptress",
+  "Grendor the Ghastly",
+  "Zephyra the Stormbringer",
+  "Skaar the Skullcrusher",
+  "Fenrir the Fangbearer",
+  "Cyrax the Corrupted",
+  "Havoc the Harbinger",
+  "Valeria the Vile",
+  "Karnak the Cursed",
+  "Azazel the Fallen",
+  "Netheron the Shadowfiend",
+  "Thalador the Twisted",
+  "Morogar the Malignant",
+  "Vexia the Venomous",
+  "Zarathos the Inferno",
+  "Sindra the Siren",
+  "Golgoth the Grim",
+  "Necros the Necromancer",
+  "Xerxes the Exiled",
+  "Lysandra the Lich",
+  "Morgath the Malefic",
+  "Venomar the Vicious",
+  "Spikejaw the Spinecrusher",
+  "Mystara the Malevolent",
+  "Gloomfang the Gruesome",
+  "Razorwing the Ravager",
+  "Draven the Deathbringer",
+  "Zaladar the Zealot",
+  "Vorath the Voidwalker",
+  "Dreadclaw the Darkspawn",
+  "Crimsonbane the Corruptor",
+  "Nyxar the Nightstalker",
+  "Varathar the Vanquisher",
+  "Thornblade the Treacherous",
+  "Nocturna the Nightshade",
+  "Ragefire the Ruthless",
+  "Grimclaw the Grim",
+  "Xanathar the Xerxes",
+  "Valkor the Vanquisher",
+  "Ravenna the Rogue",
+  "Grimgar the Grotesque",
+  "Zaros the Zealot",
+  "Soulreaver the Shadow",
+  "Azura the Azure",
+  "Mortis the Malevolent",
+  "Necrosia the Necromancer",
+  "Ragnok the Ravager",
+  "Sylvanus the Sylvan",
+  "Vexia the Vexing",
+  "Grendel the Ghastly",
+  "Thornstrike the Thorny",
+  "Havoc the Hateful",
+  "Morghul the Malefic",
+  "Xeraphim the Exalted",
+  "Vorax the Vortex",
+  "Zephyrion the Zephyr",
+  "Necroshade the Shadowcaster",
+  "Dreadmaw the Dreaded",
+  "Korvath the Corrupted",
+  "Sindarin the Sable",
+  "Malachi the Malevolent",
+  "Vorador the Vindicator",
+  "Xanathor the Xerxes",
+  "Ragnara the Ravager",
+  "Sableye the Shadow",
+  "Vortexia the Voracious",
+  "Nyxaris the Nightmarish",
+  "Grimmjaw the Grim",
+  "Thornspine the Thorny",
+  "Havocar the Harbinger",
+  "Morghast the Malefic",
+  "Xeros the Exiled",
+  "Vorakor the Vanquisher",
+  "Zarathan the Zealot",
+  "Sindri the Sulfurous",
+  "Necronis the Necromancer",
+  "Ravageclaw the Ruthless",
+  "Sylvador the Sylvan",
+  "Vexar the Vexing",
+  "Grendorath the Ghastly",
+  "Thornwrath the Thorny",
+  "Havocorn the Hateful",
+  "Mordrim the Malefic",
+  "Xerathar the Exalted",
+  "Voraxius the Vortex",
+  "Zephyros the Zephyr",
+  "Necrotor the Shadowcaster",
+  "Dreadshade the Dreaded",
+  "Korvax the Corrupted",
+  "Sindarok the Sable",
+  "Malagor the Malevolent",
+  "Vorathor the Vindicator"
+]
+
+    myAdversary = Enemy(rand.choice(potentialNameList))
+    # Adjust enemies stats based on XP and distance travelled
+    myAdversary.strength = int(myAdversary.strength * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.endurance = int(myAdversary.currenthp * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.agility = int(myAdversary.agility * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.luck = int(myAdversary.luck * (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
+    myAdversary.currenthp = int(myAdversary.endurance * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.maxhp = int(myAdversary.maxhp * (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
+    myAdversary.currentap = int(myAdversary.currentap * (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
+    myAdversary.maxap = int(myAdversary.maxap * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
     # While loop that is broken when either enemy or player is dead
-    # Clear screen and print enemy information and actions available
-    # If choosing to attack
-        # Check to see if player has enough action points to attack with current weapon
-        # Roll to see if either attack is dodged or if player/enemy missed
-        # Combat damage is dealt
-        # Check to see if enemy or player is dead
-        # Enter next turn
-    # If choosing to open inventory
-        # 
+    while myAdversary.alive:
+        # Clear screen and print enemy information and actions available
+        print(addFancyThings(myAdversary.name, "-"))
+        # If choosing to attack
+            # Check to see if player has enough action points to attack with current weapon
+            # Roll to see if either attack is dodged or if player/enemy missed
+            # Combat damage is dealt
+            # Check to see if enemy or player is dead
+            # Enter next turn
+        # If choosing to open inventory
+            # 
     pass
 
 def main():
