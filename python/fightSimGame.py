@@ -5,6 +5,7 @@
 # Combat Sim Game with RPG Elements
 
 import random as rand
+import math
 import os
 # Testing references to user-created libraries
 # import myGameChar as ch
@@ -25,6 +26,8 @@ class Player():
         self.agility = rand.randint(1,10) # gives a higher probability of being able to attack twice, or dodge an enemies attack
         self.luck = rand.randint(1,10) # increases crit chance and rarity of items
         self.inventory = []
+        self.armor = []
+        self.weapon = []
         self.lvl = 0
         self.xp = 0
     def displayStats(self):
@@ -38,6 +41,11 @@ class Player():
         print("Intelligence: " + str(self.intelligence))
         print("Agility: " + str(self.agility))
         print("Luck: " + str(self.luck))
+    def checkLevel(self):
+        if self.xp % 10:
+            print("You leveled up!")
+            self.lvl += 1
+            print("Current level: " + str(self.lvl))
     def displayInventory(self):
         # os.system('clear')
         # Placeholder space for a random enemy encounter when you open your inventory
@@ -63,6 +71,7 @@ class Player():
                     print("Armor Stats: " + str(self.inventory[itemSelection].armorDebuff))
                 elif self.inventory[itemSelection].type == "weapon":
                     print("Weapon Stats: " + str(self.inventory[itemSelection].weaponDebuff))
+                    print("AP Cost: " + str(self.inventory[itemSelection].apCost))
                 if self.inventory[itemSelection].isEquipped == True:
                     print("Equipped: Yes")
                 elif self.inventory[itemSelection].isEquipped == False:
@@ -123,6 +132,8 @@ class Game():
         self.distance = 0 # determines progression through game, scales enemies
     def walkForward(self):
         self.distance += 100
+        if self.player.currenthp < self.player.maxhp:
+            self.player.currenthp += 1
 
 class Item():
     def __init__(self, name, apCost, type, debuff):
@@ -200,13 +211,11 @@ def coreGame(me, game):
             # When looking around or moving forward, higher probability of encountering enemy
             percEncounter = rand.random()
             if percEncounter > 0.7:
+                print(addFancyThings("An Enemy Has Appeared!", "*"))
                 combat(me, game)
-            else:
-                game.distance += 100
+            game.walkForward()
         elif actionSelection == 5:
-            print(addFancyThings("", "*"))
-            print("Thanks for playing!") # this is probably just a placeholder for a more robust ending screen
-            exit()
+            break
         else:
             print("Yo, that's not an option...")
         # When looking in inventory or crafting, lower probability of encountering enemy
@@ -325,27 +334,69 @@ def combat(me, game):
 
     myAdversary = Enemy(rand.choice(potentialNameList))
     # Adjust enemies stats based on XP and distance travelled
-    myAdversary.strength = int(myAdversary.strength * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
-    myAdversary.endurance = int(myAdversary.currenthp * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
-    myAdversary.agility = int(myAdversary.agility * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
-    myAdversary.luck = int(myAdversary.luck * (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
-    myAdversary.currenthp = int(myAdversary.endurance * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
-    myAdversary.maxhp = int(myAdversary.maxhp * (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
-    myAdversary.currentap = int(myAdversary.currentap * (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
-    myAdversary.maxap = int(myAdversary.maxap * (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.strength = int(myAdversary.strength + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.endurance = int(myAdversary.currenthp + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.agility = int(myAdversary.agility + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.luck = int(myAdversary.luck + (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
+    myAdversary.currenthp = int(myAdversary.endurance + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.maxhp = myAdversary.currenthp
+    myAdversary.currentap = int(myAdversary.currentap + (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
+    myAdversary.maxap = myAdversary.currentap
     # While loop that is broken when either enemy or player is dead
-    while myAdversary.alive:
+    while myAdversary.alive == True:
         # Clear screen and print enemy information and actions available
         print(addFancyThings(myAdversary.name, "-"))
+        print(str(myAdversary.name) + "'s HP: " + str(myAdversary.currenthp) + "/" + str(myAdversary.maxhp))
+        print(str(myAdversary.name) + "'s AP: " + str(myAdversary.currentap) + "/" + str(myAdversary.maxap))
+        print(addFancyThings("", "-"))
+        print("Your HP: " + str(me.currenthp) + "/" + str(me.maxhp))
+        print("Your AP: " + str(me.currentap) + "/" + str(me.maxap))
+        print(addFancyThings("", "-"))
+        print("1: Attack")
+        print("2: Check Inventory")
+        print("3: Attempt Intimidate")
+        print("4: Retreat")
+        combatSelection = checkUserInput()
         # If choosing to attack
+        if combatSelection == 1:
             # Check to see if player has enough action points to attack with current weapon
+            if len(me.weapon) > 0:
+                if me.currentap >= me.weapon[0].apCost:
+                    me.currentap -= me.weapon[0].apCost
             # Roll to see if either attack is dodged or if player/enemy missed
-            # Combat damage is dealt
+            if rand.random() * me.agility >= 0.7 and rand.random() * myAdversary.agility >= 0.3:
+                # Combat damage is dealt
+                myAdversary.currenthp -= me.strength
+                print("You did " + str(me.strength) + " damage to " + str(myAdversary.name))
+            else:
+                print(str(myAdversary.name) + " dodged your attack!")
+            if rand.random() * myAdversary.agility >= 0.7 and rand.random() * me.agility >= 0.3:
+                me.currenthp -= myAdversary.strength
+                print(str(myAdversary.name) + " did " + str(myAdversary.strength) + " damage to you")
+            else:
+                print("You dodged " + str(myAdversary.name) + "'s attack!")
             # Check to see if enemy or player is dead
-            # Enter next turn
+            if me.currenthp <= 0:
+                me.alive = False
+                endOfGame(me, game)
+            elif myAdversary.currenthp <= 0:
+                myAdversary.alive = False
+                print("You slayed " + str(myAdversary.name) + "!")
+                xp = math.ceil(myAdversary.strength * 0.1)
+                print("You gained " + str(xp) + " xp.")
+                me.xp += xp
+                me.checkLevel()
         # If choosing to open inventory
-            # 
-    pass
+        if combatSelection == 2:
+            if me.currentap >= 2:
+                me.displayInventory()
+                me.currentap -= 2
+        if combatSelection == 3:
+            print("Intimidation failed (for now, we haven't implemented it as a feature)")
+        if combatSelection == 4:
+            print("You cannot retreat yet. Sorry.")
+        if me.currentap <= 0:
+            me.currentap = me.maxap
 
 def main():
     print("Welcome to Fight Sim Game v.0.0 prebeta")
@@ -353,11 +404,15 @@ def main():
     me = Player(myName)
     game = Game(me)
     coreGame(me, game)
+    endOfGame(me, game)
     
-def endOfGame():
+def endOfGame(me, game):
     # End game
+    print("The End.")
+    print("You Lost.")
+    print("That Sucks.")
     # Print stats
     # Prompt user to restart with this character or choose a new one or quit
-    pass
+    exit()
 
 main()
