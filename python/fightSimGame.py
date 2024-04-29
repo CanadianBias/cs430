@@ -30,9 +30,11 @@ class Player():
         self.weapon = []
         self.lvl = 0
         self.xp = 0
+        self.xpSinceLastLevel = 0
     def displayStats(self):
         print("Character: " + self.name)
         print("HP: " + str(self.currenthp) + "/" + str(self.maxhp))
+        print("XP: " + str(self.xp))
         print("Level: " + str(self.lvl))
         print("Strength: " + str(self.strength))
         print("Perception: " + str(self.perception))
@@ -42,10 +44,54 @@ class Player():
         print("Agility: " + str(self.agility))
         print("Luck: " + str(self.luck))
     def checkLevel(self):
-        if self.xp % 10:
-            print("You leveled up!")
+        if self.xpSinceLastLevel >= 10:
+            print(addFancyThings("You leveled up!", "*"))
             self.lvl += 1
             print("Current level: " + str(self.lvl))
+            print("Choose a category to upgrade:")
+            print("1: Strength (Current Strength: " + str(self.strength) + ")")
+            print("2: Perception (Current Perception: " + str(self.perception) + ")")
+            print("3: Endurance (Current Endurance: " + str(self.endurance) + ")")
+            print("4: Charisma (Current Charisma: " + str(self.charisma) + ")")
+            print("5: Intelligence (Current Intelligence: " + str(self.intelligence) + ")")
+            print("6: Agility (Current Agility: " + str(self.agility) + ")")
+            print("7: Luck (Current Luck: " + str(self.luck) + ")")
+            levelSelection = checkUserInput()
+            while True:
+                if levelSelection == 1:
+                    self.strength += 1
+                    print("New Strength Level: " + str(self.strength))
+                    break
+                if levelSelection == 2:
+                    self.perception += 1
+                    print("New Perception Level: " + str(self.perception))
+                    break
+                if levelSelection == 3:
+                    self.endurance += 1
+                    print("New Endurance Level: " + str(self.endurance))
+                    break
+                if levelSelection == 4:
+                    self.charisma += 1
+                    print("New Charisma Level :" + str(self.charisma))
+                    break
+                if levelSelection == 5:
+                    self.intelligence += 1
+                    print("New Intelligence Level: " + str(self.intelligence))
+                    break
+                if levelSelection == 6:
+                    self.agility += 1
+                    print("New Agility Level: " + str(self.agility))
+                    break
+                if levelSelection == 7:
+                    self.luck += 1
+                    print("New Luck Level: " + str(self.luck))
+                    break
+                else:
+                    print(str(levelSelection) + " wasn't an option...")
+            self.xpSinceLastLevel = 0
+            print(addFancyThings("", "*"))
+
+
     def displayInventory(self):
         # os.system('clear')
         # Placeholder space for a random enemy encounter when you open your inventory
@@ -131,9 +177,12 @@ class Game():
         self.player = currentPlayer
         self.distance = 0 # determines progression through game, scales enemies
     def walkForward(self):
-        self.distance += 100
+        self.distance += 1
         if self.player.currenthp < self.player.maxhp:
             self.player.currenthp += 1
+        print(addFancyThings("You progress through the forest", "*"))
+        print("You have walked " + str(self.distance) + "km so far...")
+        input("Press Enter to Continue...")
 
 class Item():
     def __init__(self, name, apCost, type, debuff):
@@ -185,11 +234,11 @@ def checkUserInput():
 
 def coreGame(me, game):
     while True:
-        # os.system('clear')
+        os.system('clear')
         print(addFancyThings("Status Report", "-"))
         # Print character stats to terminal to let player know their stats/hp
         me.displayStats()
-        print("Distance Travelled: " + str(game.distance) + "m")
+        print("Distance Travelled: " + str(game.distance) + "km")
         print(addFancyThings("", "-"))
         # Give player option to move forward, check inventory, look around for items, or craft items
         print("1: Open Inventory Menu") # Functional
@@ -211,7 +260,6 @@ def coreGame(me, game):
             # When looking around or moving forward, higher probability of encountering enemy
             percEncounter = rand.random()
             if percEncounter > 0.7:
-                print(addFancyThings("An Enemy Has Appeared!", "*"))
                 combat(me, game)
             game.walkForward()
         elif actionSelection == 5:
@@ -334,17 +382,19 @@ def combat(me, game):
 
     myAdversary = Enemy(rand.choice(potentialNameList))
     # Adjust enemies stats based on XP and distance travelled
-    myAdversary.strength = int(myAdversary.strength + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
-    myAdversary.endurance = int(myAdversary.currenthp + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
-    myAdversary.agility = int(myAdversary.agility + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
-    myAdversary.luck = int(myAdversary.luck + (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
-    myAdversary.currenthp = int(myAdversary.endurance + (0.01 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.strength = int(myAdversary.strength + (0.05 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.endurance = int(myAdversary.currenthp + (0.05 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.agility = int(myAdversary.agility + (0.05 * game.distance) * (0.1 * me.xp) * rand.random())
+    myAdversary.luck = int(myAdversary.luck + (0.05 * game.distance) * (0.1 * me.xp) * rand.random()) 
+    myAdversary.currenthp = int(myAdversary.endurance + (0.05 * game.distance) * (0.1 * me.xp) * rand.random())
     myAdversary.maxhp = myAdversary.currenthp
-    myAdversary.currentap = int(myAdversary.currentap + (0.01 * game.distance) * (0.1 * me.xp) * rand.random()) 
+    myAdversary.currentap = int(myAdversary.currentap + (0.05 * game.distance) * (0.1 * me.xp) * rand.random()) 
     myAdversary.maxap = myAdversary.currentap
     # While loop that is broken when either enemy or player is dead
     while myAdversary.alive == True:
         # Clear screen and print enemy information and actions available
+        os.system('clear')
+        print(addFancyThings("An Enemy Has Appeared!", "*"))
         print(addFancyThings(myAdversary.name, "-"))
         print(str(myAdversary.name) + "'s HP: " + str(myAdversary.currenthp) + "/" + str(myAdversary.maxhp))
         print(str(myAdversary.name) + "'s AP: " + str(myAdversary.currentap) + "/" + str(myAdversary.maxap))
@@ -382,9 +432,10 @@ def combat(me, game):
             elif myAdversary.currenthp <= 0:
                 myAdversary.alive = False
                 print("You slayed " + str(myAdversary.name) + "!")
-                xp = math.ceil(myAdversary.strength * 0.1)
+                xp = math.ceil(myAdversary.strength * 0.5)
                 print("You gained " + str(xp) + " xp.")
                 me.xp += xp
+                me.xpSinceLastLevel += xp
                 me.checkLevel()
         # If choosing to open inventory
         if combatSelection == 2:
@@ -394,9 +445,10 @@ def combat(me, game):
         if combatSelection == 3:
             print("Intimidation failed (for now, we haven't implemented it as a feature)")
         if combatSelection == 4:
-            print("You cannot retreat yet. Sorry.")
+            print("You cannot retreat yet. Sorry. (We haven't made this feature yet)")
         if me.currentap <= 0:
             me.currentap = me.maxap
+        input("Press Enter to Continue...")
 
 def main():
     print("Welcome to Fight Sim Game v.0.0 prebeta")
@@ -408,11 +460,27 @@ def main():
     
 def endOfGame(me, game):
     # End game
+    print(addFancyThings(" YOU DIED ", "*"))
     print("The End.")
     print("You Lost.")
     print("That Sucks.")
+    print(addFancyThings("", "*"))
     # Print stats
+    print("XP: " + str(me.xp))
+    print("Level: " + str(me.lvl))
+    print("Distance Travelled: " + str(game.distance))
     # Prompt user to restart with this character or choose a new one or quit
-    exit()
+    print("Would you like to restart or exit?")
+    print("1: Restart")
+    print("2: Exit")
+    endSelection = checkUserInput()
+    while True:
+        if endSelection == 1:
+            os.system('/bin/python3 /home/elidrom/Documents/cs430/cs430/python/fightSimGame.py')
+            exit()
+        if endSelection == 2:
+            exit()
+        else:
+            continue
 
 main()
