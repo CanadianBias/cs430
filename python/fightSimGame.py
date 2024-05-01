@@ -132,50 +132,73 @@ class Player():
             inventorySelection = checkUserInput()
             if inventorySelection == 1:
                 itemSelection = checkUserInput()
-                item = self.inventory[itemSelection]
-                print(addFancyThings(item.name, "-"))
-                print("Name: " + str(item.name))
-                print("Type: " + str(item.type))
-                if item.type == "armor":
-                    print("Armor Stats: " + str(item.armorDebuff))
-                elif item.type == "weapon":
-                    print("Weapon Stats: " + str(item.weaponDebuff))
-                    print("AP Cost: " + str(item.apCost))
-                if item.isEquipped == True:
-                    print("Equipped: Yes")
-                elif item.isEquipped == False:
-                    print("Equipped: No")
-                print(addFancyThings("", "-"))
-                print("1: Equip/Unequip Item")
-                print("2: Exit to Inventory")
-                print("3: Exit to Game")
-                equipSelection = checkUserInput()
-                if equipSelection == 1:
+                if len(self.inventory) > itemSelection:
+                    item = self.inventory[itemSelection]
+                    print(addFancyThings(item.name, "-"))
+                    print("Name: " + str(item.name))
+                    print("Type: " + str(item.type))
+                    if item.type == "armor":
+                        print("Armor Stats: " + str(item.armorDebuff))
+                    elif item.type == "weapon":
+                        print("Weapon Stats: " + str(item.weaponDebuff))
+                        print("AP Cost: " + str(item.apCost))
                     if item.isEquipped == True:
-                        self.unequipItem(item)
+                        print("Equipped: Yes")
                     elif item.isEquipped == False:
-                        self.equipItem(item)
-                elif equipSelection == 2:
-                    self.displayInventory()
-                elif equipSelection == 3:
-                    return
+                        print("Equipped: No")
+                    print(addFancyThings("", "-"))
+                    print("1: Equip/Unequip Item")
+                    print("2: Exit to Inventory")
+                    print("3: Exit to Game")
+                    equipSelection = checkUserInput()
+                    if equipSelection == 1:
+                        if item.isEquipped == True:
+                            self.unequipItem(item)
+                        elif item.isEquipped == False:
+                            self.equipItem(item)
+                    elif equipSelection == 2:
+                        self.displayInventory()
+                    elif equipSelection == 3:
+                        return
+                else:
+                    print("Did you even see an item " + str(itemSelection) + " in your inventory???")
+                    input("Press Enter to continue...")
             if inventorySelection == 2:
                 return
             
     def equipItem(self, item):
         # Take equippable item, change equip status, increment max health/strength
-        
-        pass
+        if item.type == "weapon":
+            if len(self.weapon) >= 1:
+                print("Please unequip a weapon before you try to equip a new one.")
+            else:
+                self.weapon.append(item)
+                item.isEquipped = True
+                self.strength += item.weaponDebuff
+        if item.type == "armor":
+            self.armor.append(item)
+            item.isEquipped = True
+            self.currenthp += item.armorDebuff
+            self.maxhp += item.armorDebuff
+        print(str(item.name) + " has been equipped.")
+        input("Press Enter to continue...")
 
     def unequipItem(self, item):
-        # Take equipped item, change equip status, deincrement max health/strength
-        pass
-
-    def findItem(self):
-        # Placeholder for chance of enemy spawning when looking for an item
-        # Check perception stat, adjust probability needed to find item accordingly
-        # Create random stat using lists of possible items
-        pass
+        if item.type == "weapon":
+            self.weapon.remove(item)
+            self.weapon.isEquipped = False
+            self.strength -= item.weaponDebuff
+        if item.type == "armor":
+            if self.currenthp > item.armorDebuff:
+                self.armor.remove(item)
+                item.isEquipped = False
+                self.currenthp -= item.armorDebuff
+                self.maxhp -= item.armorDebuff
+            else:
+                print("You cannot unequip this armor as it is keeping you from dying.")
+                return
+        print(str(item.name) + " has been unequipped.")
+        input("Press Enter to continue...")
 
     # Not going to be implemented, not enough time
     def craftItem(self):
@@ -215,10 +238,231 @@ class Game():
         print(addFancyThings("You progress through the forest", "*"))
         print("You have walked " + str(self.distance) + "km so far...")
         input("Press Enter to Continue...")
+    def findItem(self):
+        # Placeholder for chance of enemy spawning when looking for an item
+        print(addFancyThings("Looking for item", "*"))
+        percEncounter = rand.random()
+        if percEncounter > 0.6:
+            combat(self.player, self)
+        if rand.random() > 0.5:
+            print("You wander around the forest and stumble across an item.")
+            if rand.random() > 0.5:
+                sword_names = [
+    "Excalibur",
+    "Stormbringer",
+    "Frostbite",
+    "Shadowstrike",
+    "Doombringer",
+    "Soulreaper",
+    "Dragonfang",
+    "Nightfall",
+    "Sunblade",
+    "Voidrender",
+    "Windrider",
+    "Bloodthirst",
+    "Starfall",
+    "Goreblade",
+    "Eclipse",
+    "Dawnbreaker",
+    "Whisperwind",
+    "Thunderbolt",
+    "Venomstrike",
+    "Spectral Edge",
+    "Runeblade",
+    "Hellfire",
+    "Oathkeeper",
+    "Dreamslayer",
+    "Fateweaver",
+    "Grimfang",
+    "Harbinger",
+    "Bonecrusher",
+    "Serpent's Bite",
+    "Darkheart",
+    "Skysteel",
+    "Flameburst",
+    "Death's Embrace",
+    "Frostfang",
+    "Wraithblade",
+    "Moonshadow",
+    "Obsidian Edge",
+    "Bloodmoon",
+    "Night's Whisper",
+    "Dreadscythe",
+    "Voidblade",
+    "Silent Death",
+    "Ragefire",
+    "Lightning Fury",
+    "Dragonfire",
+    "Sunspear",
+    "Soulshatter",
+    "Stargazer",
+    "Twilight's Call",
+    "Shadowstrike",
+    "Thunderclap",
+    "Inferno",
+    "Blazefury",
+    "Iceshatter",
+    "Frostbite",
+    "Whirlwind",
+    "Vorpal Blade",
+    "Ebonrazor",
+    "Windchill",
+    "Bloodlust",
+    "Skysplitter",
+    "Shadowflame",
+    "Doomhammer",
+    "Hellforge",
+    "Starfury",
+    "Dreadbane",
+    "Heartseeker",
+    "Voidstorm",
+    "Frostreaver",
+    "Soulflayer",
+    "Darkbane",
+    "Stormcaller",
+    "Oblivion",
+    "Blackthorn",
+    "Venomspine",
+    "Moonlight",
+    "Starseeker",
+    "Abyssal Edge",
+    "Bloodborn",
+    "Skyslicer",
+    "Ebonblade",
+    "Nethersteel",
+    "Sunflare",
+    "Soulcleaver",
+    "Shadowmourne",
+    "Doomsayer",
+    "Voidwalker",
+    "Frostwind",
+    "Stormblade",
+    "Dragonclaw",
+    "Nightslayer",
+    "Eclipse",
+    "Bloodforge",
+    "Grimslayer",
+    "Whisperblade",
+    "Thunderstrike",
+    "Dreadblade",
+    "Flamefang",
+    "Windwalker"
+]
+                newSword = Item(rand.choice(sword_names), rand.randint(1,5), "weapon", (rand.randint(1,int((rand.random()+1)*self.player.lvl))))
+                self.player.inventory.append(newSword)
+                print(str(newSword.name) + " added to inventory.")
+            else:
+                armor_names = [
+    "Dragonscale Mail",
+    "Shadowcloak",
+    "Titanium Platemail",
+    "Stormguard Plate",
+    "Phoenix Guard",
+    "Frostforged Armor",
+    "Demonhide Vest",
+    "Celestial Plate",
+    "Moonshadow Robes",
+    "Soulstone Armor",
+    "Voidwalker Garb",
+    "Fireborn Plate",
+    "Obsidian Shell",
+    "Aegis of Valor",
+    "Thunderstruck Plate",
+    "Sunfire Mantle",
+    "Darksteel Plate",
+    "Spiritforge Mail",
+    "Dreadplate Armor",
+    "Blazeguard Mail",
+    "Skyward Defender",
+    "Ghostwalker Cloak",
+    "Icebound Plate",
+    "Serpent Scale Armor",
+    "Starlight Shroud",
+    "Bloodmoon Plate",
+    "Windchaser Armor",
+    "Nethersteel Mail",
+    "Shadowweave Robes",
+    "Titanic Scale Armor",
+    "Stormcloak",
+    "Flamekeeper's Plate",
+    "Runebound Armor",
+    "Whirlwind Mail",
+    "Voidheart Vestments",
+    "Phoenixscale Armor",
+    "Twilight Cloak",
+    "Dragonbone Plate",
+    "Nightfall Robes",
+    "Sunshard Armor",
+    "Eclipse Guard",
+    "Frostbite Mail",
+    "Doomguard Plate",
+    "Mystic Mantle",
+    "Blackthorn Mail",
+    "Thunderbolt Armor",
+    "Soulbound Plate",
+    "Deathshroud Cloak",
+    "Bladewalker Armor",
+    "Firestorm Plate",
+    "Dreadshadow Cloak",
+    "Shadowflame Armor",
+    "Celestial Robes",
+    "Moonlit Mail",
+    "Soulweave Cloak",
+    "Voidborn Plate",
+    "Starcaller Mantle",
+    "Bloodfury Armor",
+    "Windwalker Vest",
+    "Nightsong Mail",
+    "Abyssal Plate",
+    "Frostguard Armor",
+    "Doombringer Cloak",
+    "Spectral Armor",
+    "Dragonhide Vestments",
+    "Skysunder Plate",
+    "Ebonsteel Mail",
+    "Netherweave Robes",
+    "Stormwrath Plate",
+    "Flamestrike Armor",
+    "Shadowbound Cloak",
+    "Titanforged Mail",
+    "Sunshadow Robes",
+    "Eclipsed Armor",
+    "Frostward Cloak",
+    "Darkstorm Plate",
+    "Bloodfrost Mail",
+    "Twilightweave Robes",
+    "Soulreaver Plate",
+    "Voidscale Armor",
+    "Phoenixguard Cloak",
+    "Thunderclad Mail",
+    "Abyssal Shroud",
+    "Windwhisper Armor",
+    "Nightshade Robes",
+    "Doomcloak",
+    "Starborn Plate",
+    "Celestial Mantle",
+    "Moonshroud Armor",
+    "Shadowfrost Cloak",
+    "Blazeforged Mail",
+    "Skyshatter Armor",
+    "Dreadshade Robes",
+    "Soulkeeper Plate",
+    "Voidwalker's Mantle",
+    "Frostflame Armor",
+    "Doomward Cloak",
+    "Bloodbound Mail",
+    "Necrotic Plate"
+]
+                newArmor = Item(rand.choice(armor_names), 0, "armor", rand.randint(1,10))
+                self.player.inventory.append(newArmor)
+                print(str(newArmor.name) + " added to inventory.")
+        else:
+            print("You have wasted your time aimlessly walking around the forest. You have found nothing.")
+        input("Press Enter to continue...")
 
 class Item():
     
-    def __init__(self, name, apCost, type, debuff, material):
+    def __init__(self, name, apCost, type, debuff):
         self.name = name
         # Bools to let inventory know difference between resource and item
         self.isItem = True
@@ -229,7 +473,6 @@ class Item():
             self.armorDebuff = debuff
         elif type == "weapon":
             self.weaponDebuff = debuff
-        self.material = material
         self.isEquipped = False
 
 # Not going to be properly implemented in time, too much additional logic required at this time
@@ -288,7 +531,7 @@ def coreGame(me, game):
             # me.inventory.append(newItem)
             me.displayInventory()
         elif actionSelection == 2:
-            pass
+            game.findItem()
         # elif actionSelection == 3:
         elif actionSelection == 3:
             # When looking around or moving forward, higher probability of encountering enemy
@@ -447,30 +690,22 @@ def combat(me, game):
             if len(me.weapon) > 0:
                 if me.currentap >= me.weapon[0].apCost:
                     me.currentap -= me.weapon[0].apCost
+                    if rand.random() * me.agility >= 0.7 and rand.random() * myAdversary.agility >= 0.3:
+                        # Combat damage is dealt
+                        myAdversary.currenthp -= me.strength
+                        print("You did " + str(me.strength) + " damage to " + str(myAdversary.name))
+                    else:
+                        print(str(myAdversary.name) + " dodged your attack!")
+                else:
+                    print("You do not have enough AP to attack with your current weapon.")
+            else:
+                if rand.random() * me.agility >= 0.7 and rand.random() * myAdversary.agility >= 0.3:
+                    # Combat damage is dealt
+                    myAdversary.currenthp -= me.strength
+                    print("You did " + str(me.strength) + " damage to " + str(myAdversary.name))
+                else:
+                    print(str(myAdversary.name) + " dodged your attack!")
             # Roll to see if either attack is dodged or if player/enemy missed
-            if rand.random() * me.agility >= 0.7 and rand.random() * myAdversary.agility >= 0.3:
-                # Combat damage is dealt
-                myAdversary.currenthp -= me.strength
-                print("You did " + str(me.strength) + " damage to " + str(myAdversary.name))
-            else:
-                print(str(myAdversary.name) + " dodged your attack!")
-            if rand.random() * myAdversary.agility >= 0.7 and rand.random() * me.agility >= 0.3:
-                me.currenthp -= myAdversary.strength
-                print(str(myAdversary.name) + " did " + str(myAdversary.strength) + " damage to you")
-            else:
-                print("You dodged " + str(myAdversary.name) + "'s attack!")
-            # Check to see if enemy or player is dead
-            if me.currenthp <= 0:
-                me.alive = False
-                endOfGame(me, game)
-            elif myAdversary.currenthp <= 0:
-                myAdversary.alive = False
-                print("You slayed " + str(myAdversary.name) + "!")
-                xp = math.ceil(myAdversary.strength * 0.5)
-                print("You gained " + str(xp) + " xp.")
-                me.xp += xp
-                me.xpSinceLastLevel += xp
-                me.checkLevel()
         # If choosing to open inventory
         if combatSelection == 2:
             if me.currentap >= 2:
@@ -485,6 +720,23 @@ def combat(me, game):
                 break
             else:
                 print("You're not fast enough, and you failed to retreat.")
+        if rand.random() * myAdversary.agility >= 0.7 and rand.random() * me.agility >= 0.3:
+            me.currenthp -= myAdversary.strength
+            print(str(myAdversary.name) + " did " + str(myAdversary.strength) + " damage to you")
+        else:
+            print("You dodged " + str(myAdversary.name) + "'s attack!")
+        # Check to see if enemy or player is dead
+        if me.currenthp <= 0:
+            me.alive = False
+            endOfGame(me, game)
+        elif myAdversary.currenthp <= 0:
+            myAdversary.alive = False
+            print("You slayed " + str(myAdversary.name) + "!")
+            xp = math.ceil(myAdversary.strength * 0.5)
+            print("You gained " + str(xp) + " xp.")
+            me.xp += xp
+            me.xpSinceLastLevel += xp
+            me.checkLevel()
         if me.currentap <= 0:
             me.currentap = me.maxap
         input("Press Enter to Continue...")
